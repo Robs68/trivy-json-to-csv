@@ -1,0 +1,161 @@
+#!/usr/bin/env python
+
+import json
+import pandas as pd
+
+
+def k8s(data):
+    for i in range(0, len(data["Resources"])):
+        try:
+            vulnerabilites = data["Resources"][i]["Results"]
+            for o in range(0, len(vulnerabilites[0]["Vulnerabilities"])):
+                vulnID = vulnerabilites[0]["Vulnerabilities"][o]["VulnerabilityID"]
+                pkgname = vulnerabilites[0]["Vulnerabilities"][o]["PkgName"]
+                installedVersion = vulnerabilites[0]["Vulnerabilities"][o]["InstalledVersion"]
+                fixedVersion = vulnerabilites[0]["Vulnerabilities"][o]["FixedVersion"]
+                status = vulnerabilites[0]["Vulnerabilities"][o]["Status"]
+                title = vulnerabilites[0]["Vulnerabilities"][o]["Title"]
+                description = vulnerabilites[0]["Vulnerabilities"][o]["Description"]
+                severity = vulnerabilites[0]["Vulnerabilities"][o]["Severity"]
+                if 'nvd' in vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]:
+                    if 'V3Vector' in vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["nvd"]:
+                        cvss = vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["nvd"][
+                            "V3Vector"]
+                        vecteur_analyse = cvss[12]
+                        V3Score = vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["nvd"]["V3Score"]
+                    else:
+                        cvss = vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["nvd"][
+                            "V2Vector"]
+                        vecteur_analyse = cvss[4]
+                        V3Score = vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["nvd"]["V2Vector"]
+                elif 'redhat' in vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]:
+                    if 'V3Vector' in vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["redhat"]:
+                        cvss = vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["redhat"][
+                            "V3Vector"]
+                        vecteur_analyse = cvss[12]
+                        V3Score = vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["redhat"]["V3Score"]
+                    else:
+                        cvss = vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["redhat"][
+                            "V2Vector"]
+                        vecteur_analyse = cvss[4]
+                        V3Score = vulnerabilites[0]["Vulnerabilities"][o]["CVSS"]["redhat"]["V2Vector"]
+                paquets.append(pkgname)
+                cve.append(vulnID)
+                version_installee.append(installedVersion)
+                fixed_version.append(fixedVersion)
+                status_vuln.append(status)
+                niveau.append(severity)
+                titre.append(title)
+                description_vuln.append(description)
+                cvss_vul.append(cvss)
+                v3score.append(V3Score)
+                vecteur.append(vecteur_analyse)
+
+        except KeyError:
+            pass
+    return paquets, cve, version_installee, fixed_version, status_vuln, niveau, titre, description_vuln, cvss_vul, v3score, vecteur
+
+def filesystem(data):
+    for i in range(0, len(data["Results"])):
+        vulnerabilites = data["Results"][i]
+        for o in range(0, len(vulnerabilites["Vulnerabilities"])):
+            vulnID = data["Results"][0]["Vulnerabilities"][o]["VulnerabilityID"]
+            pkgname = vulnerabilites["Vulnerabilities"][o]["PkgName"]
+            installedVersion = vulnerabilites["Vulnerabilities"][o]["InstalledVersion"]
+            try:
+                fixedVersion = vulnerabilites["Vulnerabilities"][o]["FixedVersion"]
+            except:
+                fixedVersion = ''
+            status = vulnerabilites["Vulnerabilities"][o]["Status"]
+            try:
+                title = vulnerabilites["Vulnerabilities"][o]["Title"]
+                description = vulnerabilites["Vulnerabilities"][o]["Description"]
+            except:
+                title = 'N/A'
+                description = 'N/A'
+            severity = vulnerabilites["Vulnerabilities"][o]["Severity"]
+            try:
+                if 'nvd' in vulnerabilites["Vulnerabilities"][o]["CVSS"]:
+                    if 'V3Vector' in vulnerabilites["Vulnerabilities"][o]["CVSS"]["nvd"]:
+                        cvss = vulnerabilites["Vulnerabilities"][o]["CVSS"]["nvd"][
+                            "V3Vector"]
+                        vecteur_analyse = cvss[12]
+                        V3Score = vulnerabilites["Vulnerabilities"][o]["CVSS"]["nvd"]["V3Score"]
+                    else:
+                        cvss = vulnerabilites["Vulnerabilities"][o]["CVSS"]["nvd"][
+                            "V2Vector"]
+                        vecteur_analyse = cvss[4]
+                        V3Score = vulnerabilites["Vulnerabilities"][o]["CVSS"]["nvd"]["V2Vector"]
+                elif 'redhat' in vulnerabilites["Vulnerabilities"][o]["CVSS"]:
+                    if 'V3Vector' in vulnerabilites["Vulnerabilities"][o]["CVSS"]["redhat"]:
+                        cvss = vulnerabilites["Vulnerabilities"][o]["CVSS"]["redhat"][
+                            "V3Vector"]
+                        vecteur_analyse = cvss[12]
+                        V3Score = vulnerabilites["Vulnerabilities"][o]["CVSS"]["redhat"]["V3Score"]
+                    else:
+                        cvss = vulnerabilites["Vulnerabilities"][o]["CVSS"]["redhat"][
+                            "V2Vector"]
+                        vecteur_analyse = cvss[4]
+                        V3Score = vulnerabilites["Vulnerabilities"][o]["CVSS"]["redhat"]["V2Vector"]
+            except:
+                print("erreur ligne : " + vulnID + " " + pkgname)
+
+            paquets.append(pkgname)
+            cve.append(vulnID)
+            version_installee.append(installedVersion)
+            fixed_version.append(fixedVersion)
+            status_vuln.append(status)
+            niveau.append(severity)
+            titre.append(title)
+            description_vuln.append(description)
+            cvss_vul.append(cvss)
+            v3score.append(V3Score)
+            vecteur.append(vecteur_analyse)
+
+    return paquets, cve, version_installee, fixed_version, status_vuln, niveau, titre, description_vuln, cvss_vul, v3score, vecteur
+
+
+with open('', encoding="utf8") as f:
+    data = json.load(f)
+
+csv_file = 'output2.csv'
+paquets = []
+cve = []
+version_installee = []
+fixed_version = []
+status_vuln = []
+niveau = []
+titre = []
+description_vuln = []
+cvss_vul = []
+v3score = []
+vecteur = []
+
+
+if 'Resources' in data:
+    print("Analyse du rapport k8s")
+    paquets, cve, version_installee, fixed_version, status_vuln, niveau, titre, description_vuln, cvss_vul, v3score, vecteur = k8s(data)
+else:
+    print('Analyse du rapport filesystem')
+    paquets, cve, version_installee, fixed_version, status_vuln, niveau, titre, description_vuln, cvss_vul, v3score, vecteur = filesystem(
+        data)
+
+
+df = pd.DataFrame(paquets, columns=['Paquets'])
+df1 = pd.DataFrame(cve, columns=['CVE'])
+df2 = pd.DataFrame(version_installee, columns=['Installed Version'])
+df3 = pd.DataFrame(fixed_version, columns=['Fixed Version'])
+df4 = pd.DataFrame(status_vuln, columns=['Status'])
+df5 = pd.DataFrame(niveau, columns=['Severity'])
+df6 = pd.DataFrame(titre, columns=['Titre'])
+df7 = pd.DataFrame(description_vuln, columns=['Description'])
+df8 = pd.DataFrame(cvss_vul, columns=['CVSS'])
+df9 = pd.DataFrame(v3score, columns=["Score V3"])
+df10 = pd.DataFrame(vecteur, columns=['Vecteur'])
+
+frames = [df1, df, df9, df3, df4, df5, df6, df7, df8, df2, df10]
+df = pd.concat(frames, axis=1)
+
+print(df) #check result
+
+df.to_csv(csv_file) #to csv
